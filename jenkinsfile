@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Pull code from the repository
+                git 'https://github.com/maorsh1/project9.8.git'
+            }
+        }
+        stage('Build') {
+            steps {
+                script {
+                    bat 'docker build -t nodejs-app .'
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                script {
+                    bat 'docker run nodejs-app npm test'
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                script {
+                    bat 'docker tag nodejs-app localhost:5000/nodejs-app'
+                    bat 'docker push localhost:5000/nodejs-app'
+                    bat 'kubectl apply -f k8s\\deployment.yaml'
+                    bat 'kubectl apply -f k8s\\service.yaml'
+                }
+            }
+        }
+    }
+}
